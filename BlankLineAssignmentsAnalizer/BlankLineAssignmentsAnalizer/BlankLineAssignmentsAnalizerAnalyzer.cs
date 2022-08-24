@@ -86,21 +86,21 @@ namespace BlankLineAssignmentsAnalizer
                 {
                     var currentType = GetNodeKind(childNode);
 
-                    var lineSpan = childNode.SyntaxTree.GetLineSpan(childNode.Span);
-                    var currentLinePosition = lineSpan.StartLinePosition.Line;
+                    var currentLineSpan = childNode.SyntaxTree.GetLineSpan(childNode.Span);
                     if (previousNode == null)
                     {
                         previousNode = childNode;
                         continue;
                     }
 
-                    var previousLinePosition = previousNode.SyntaxTree.GetLineSpan(previousNode.Span).StartLinePosition.Line;
+                    var previousLineSpan = previousNode.SyntaxTree.GetLineSpan(previousNode.Span);
                     var previousType = GetNodeKind(previousNode);
 
-                    if (currentLinePosition - previousLinePosition == 1)
+                    if (currentLineSpan.StartLinePosition.Line - previousLineSpan.EndLinePosition.Line == 1)
                     {
                         var isDiffOnBegin = (currentType == SyntaxKind.SimpleAssignmentExpression || currentType == SyntaxKind.LocalDeclarationStatement) && (previousType != SyntaxKind.SimpleAssignmentExpression && previousType != SyntaxKind.LocalDeclarationStatement);
                         var isDiffOnEnd = (previousType == SyntaxKind.SimpleAssignmentExpression || previousType == SyntaxKind.LocalDeclarationStatement) && (currentType != SyntaxKind.SimpleAssignmentExpression && currentType != SyntaxKind.LocalDeclarationStatement);
+
                         if (isDiffOnBegin)
                         {
                             context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, childNode.GetLocation(), DiagnosticSeverity.Warning));
