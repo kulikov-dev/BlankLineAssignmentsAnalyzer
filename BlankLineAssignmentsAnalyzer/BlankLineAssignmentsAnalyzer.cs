@@ -66,14 +66,14 @@ namespace BlankLineAssignmentsAnalyzer
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
 
-            context.RegisterCodeBlockAction(ContextCodeBlockAnalize);
+            context.RegisterCodeBlockAction(AnalyzeContextCodeBlock);
         }
 
         /// <summary>
         /// Code block analyze
         /// </summary>
         /// <param name="context"> CodeBlock context </param>
-        private static void ContextCodeBlockAnalize(CodeBlockAnalysisContext context)
+        private static void AnalyzeContextCodeBlock(CodeBlockAnalysisContext context)
         {
             var blockNodes = context.CodeBlock.ChildNodes();
 
@@ -84,18 +84,18 @@ namespace BlankLineAssignmentsAnalyzer
                     continue;
                 }
 
-                AnalizeCodeBlock(context, blockNode);
+                AnalyzeCodeBlock(context, blockNode);
 
                 break;
             }
         }
 
         /// <summary>
-        /// Analize specific code block
+        /// Analyze specific code block
         /// </summary>
         /// <param name="context"> Context </param>
         /// <param name="codeBlock"> Code block </param>
-        private static void AnalizeCodeBlock(CodeBlockAnalysisContext context, SyntaxNode codeBlock)
+        private static void AnalyzeCodeBlock(CodeBlockAnalysisContext context, SyntaxNode codeBlock)
         {
             var childrenNodes = codeBlock.ChildNodes();
             var previousNode = default(SyntaxNode);
@@ -106,13 +106,15 @@ namespace BlankLineAssignmentsAnalyzer
 
                 if (IsMultipleKind(currentType))
                 {
-                    AnalizeCodeBlock(context, childNode);
+                    AnalyzeCodeBlock(context, childNode);
                 }
 
                 var currentLineSpan = childNode.SyntaxTree.GetLineSpan(childNode.Span);
+
                 if (previousNode == null)
                 {
                     previousNode = childNode;
+
                     continue;
                 }
 

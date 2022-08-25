@@ -87,7 +87,7 @@ namespace BlankLineAssignmentsAnalyzer.Test
     }";
 
         [TestMethod]
-        public async Task TestAnalizerBlankAfterBlock()
+        public async Task TestAnalyzerBlankAfterBlock()
         {
             var expectedList = new[]
             {
@@ -159,7 +159,7 @@ namespace BlankLineAssignmentsAnalyzer.Test
         }
 
         [TestMethod]
-        public async Task TestAnalizerBlankBeforeBlock()
+        public async Task TestAnalyzerBlankBeforeBlock()
         {
             var expectedList = new[]
             {
