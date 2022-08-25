@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace BlankLineAssignmentsAnalizer {
+namespace BlankLineAssignmentsAnalyzer {
     using System;
     
     
@@ -22,14 +22,14 @@ namespace BlankLineAssignmentsAnalizer {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class AnalizerResources {
+    internal class AnalyzerResources_ru_resx {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal AnalizerResources() {
+        internal AnalyzerResources_ru_resx() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace BlankLineAssignmentsAnalizer {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BlankLineAssignmentsAnalizer.AnalizerResources", typeof(AnalizerResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BlankLineAssignmentsAnalyzer.AnalyzerResources.ru.resx", typeof(AnalyzerResources_ru_resx).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,7 +61,7 @@ namespace BlankLineAssignmentsAnalizer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Blank line..
+        ///   Looks up a localized string similar to Анализатор для определения несоответствия нотации о разделении блоков присваивания пустыми строками.
         /// </summary>
         internal static string AnalyzerDescription {
             get {
@@ -70,7 +70,7 @@ namespace BlankLineAssignmentsAnalizer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Must have blank line.
+        ///   Looks up a localized string similar to Блок кода, в котором происходит присваивания переменным должен быть разделен пустыми строками..
         /// </summary>
         internal static string AnalyzerMessageFormat {
             get {
@@ -79,7 +79,7 @@ namespace BlankLineAssignmentsAnalizer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Blank line for assignments.
+        ///   Looks up a localized string similar to Разделение присваивания пустыми строками.
         /// </summary>
         internal static string AnalyzerTitle {
             get {

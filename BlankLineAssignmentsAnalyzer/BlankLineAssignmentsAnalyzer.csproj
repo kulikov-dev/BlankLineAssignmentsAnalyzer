@@ -18,16 +18,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="AnalizerResources.en.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="AnalizerResources.en.resx" />
-    <Compile Update="AnalizerResources.ru.Designer.cs">
+    <Compile Update="AnalyzerResources.en.Designer.cs" DesignTime="True" AutoGen="True" DependentUpon="AnalyzerResources.en.resx" />
+    <Compile Update="AnalyzerResources.ru.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>AnalizerResources.ru.resx</DependentUpon>
+      <DependentUpon>AnalyzerResources.ru.resx</DependentUpon>
     </Compile>
-    <EmbeddedResource Update="AnalizerResources.en.resx" Generator="ResXFileCodeGenerator" LastGenOutput="AnalizerResources.en.Designer.cs" />
-    <EmbeddedResource Update="AnalizerResources.ru.resx">
+    <EmbeddedResource Update="AnalyzerResources.en.resx" Generator="ResXFileCodeGenerator" LastGenOutput="AnalyzerResources.en.Designer.cs" />
+    <EmbeddedResource Update="AnalyzerResources.ru.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>AnalizerResources.ru.Designer.cs</LastGenOutput>
+      <LastGenOutput>AnalyzerResources.ru.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
 

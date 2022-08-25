@@ -4,38 +4,38 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
 
-namespace BlankLineAssignmentsAnalizer
+namespace BlankLineAssignmentsAnalyzer
 {
     /// <summary>
     /// The analyzer provides warning messages for blocks of code with variable assignments, which doesn't have blank lines before and after itself.
     /// </summary>
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class BlankLineAssignmentsAnalizerAnalyzer : DiagnosticAnalyzer
+    public class BlankLineAssignmentsAnalyzer : DiagnosticAnalyzer
     {
         /// <summary>
-        /// Analyzer identifier
+        /// Analyzer identifier for a block of assignment without blank lines before block
         /// </summary>
         public const string DiagnosticIdBefore = "BLAA_1";
 
         /// <summary>
-        /// Analyzer identifier
+        /// Analyzer identifier for a block of assignment without blank lines after block
         /// </summary>
         public const string DiagnosticIdAfter = "BLAA_2";
 
         /// <summary>
         /// Title
         /// </summary>
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(AnalizerResources.AnalyzerTitle), AnalizerResources.ResourceManager, typeof(AnalizerResources));
+        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(AnalyzerResources.AnalyzerTitle), AnalyzerResources.ResourceManager, typeof(AnalyzerResources));
 
         /// <summary>
         /// Description
         /// </summary>
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(AnalizerResources.AnalyzerDescription), AnalizerResources.ResourceManager, typeof(AnalizerResources));
+        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(AnalyzerResources.AnalyzerDescription), AnalyzerResources.ResourceManager, typeof(AnalyzerResources));
 
         /// <summary>
         /// Message text
         /// </summary>
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(AnalizerResources.AnalyzerMessageFormat), AnalizerResources.ResourceManager, typeof(AnalizerResources));
+        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(AnalyzerResources.AnalyzerMessageFormat), AnalyzerResources.ResourceManager, typeof(AnalyzerResources));
 
         /// <summary>
         /// Category
@@ -43,9 +43,13 @@ namespace BlankLineAssignmentsAnalizer
         private const string Category = "Formatting Style";
 
         /// <summary>
-        /// Rule for a blocks of assignment without blank lines
+        /// Rule for a block of assignment without blank lines before block
         /// </summary>
         public static readonly DiagnosticDescriptor AssignmentsRuleBefore = new DiagnosticDescriptor(DiagnosticIdBefore, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
+
+        /// <summary>
+        /// Rule for a block of assignment without blank lines after block
+        /// </summary>
         public static readonly DiagnosticDescriptor AssignmentsRuleAfter = new DiagnosticDescriptor(DiagnosticIdAfter, Title, MessageFormat, Category, DiagnosticSeverity.Warning, isEnabledByDefault: true, description: Description);
 
         /// <summary>
@@ -98,14 +102,14 @@ namespace BlankLineAssignmentsAnalizer
 
                     if (currentLineSpan.StartLinePosition.Line - previousLineSpan.EndLinePosition.Line == 1)
                     {
-                        var isDiffOnBegin = (currentType == SyntaxKind.SimpleAssignmentExpression || currentType == SyntaxKind.LocalDeclarationStatement) && (previousType != SyntaxKind.SimpleAssignmentExpression && previousType != SyntaxKind.LocalDeclarationStatement);
-                        var isDiffOnEnd = (previousType == SyntaxKind.SimpleAssignmentExpression || previousType == SyntaxKind.LocalDeclarationStatement) && (currentType != SyntaxKind.SimpleAssignmentExpression && currentType != SyntaxKind.LocalDeclarationStatement);
+                        var isNeedBlankLineBeforeBlock = (currentType == SyntaxKind.SimpleAssignmentExpression || currentType == SyntaxKind.LocalDeclarationStatement) && (previousType != SyntaxKind.SimpleAssignmentExpression && previousType != SyntaxKind.LocalDeclarationStatement);
+                        var isNeedBlankLineAfterBlock = (previousType == SyntaxKind.SimpleAssignmentExpression || previousType == SyntaxKind.LocalDeclarationStatement) && (currentType != SyntaxKind.SimpleAssignmentExpression && currentType != SyntaxKind.LocalDeclarationStatement);
 
-                        if (isDiffOnBegin)
+                        if (isNeedBlankLineBeforeBlock)
                         {
                             context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, childNode.GetLocation(), DiagnosticSeverity.Warning));
                         }
-                        else if (isDiffOnEnd)
+                        else if (isNeedBlankLineAfterBlock)
                         {
                             context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleAfter, previousNode.GetLocation(), DiagnosticSeverity.Warning));
                         }
