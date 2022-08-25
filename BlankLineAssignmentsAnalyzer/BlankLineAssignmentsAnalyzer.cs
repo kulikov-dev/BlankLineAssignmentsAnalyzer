@@ -69,13 +69,32 @@ namespace BlankLineAssignmentsAnalyzer
             context.RegisterCodeBlockAction(ContextCodeBlockAnalize);
         }
 
-        private static bool IsMultipleKind(SyntaxKind kind)
+        /// <summary>
+        /// Code block analyze
+        /// </summary>
+        /// <param name="context"> CodeBlock context </param>
+        private static void ContextCodeBlockAnalize(CodeBlockAnalysisContext context)
         {
-            return kind == SyntaxKind.Block || kind == SyntaxKind.ForStatement || kind == SyntaxKind.ForEachStatement ||
-                   kind == SyntaxKind.TryStatement || kind == SyntaxKind.FinallyClause ||
-                   kind == SyntaxKind.WhileStatement || kind == SyntaxKind.IfStatement || kind == SyntaxKind.ElseClause;
+            var blockNodes = context.CodeBlock.ChildNodes();
+
+            foreach (var blockNode in blockNodes)
+            {
+                if (blockNode.Kind() != SyntaxKind.Block)
+                {
+                    continue;
+                }
+
+                AnalizeCodeBlock(context, blockNode);
+
+                break;
+            }
         }
 
+        /// <summary>
+        /// Analize specific code block
+        /// </summary>
+        /// <param name="context"> Context </param>
+        /// <param name="codeBlock"> Code block </param>
         private static void AnalizeCodeBlock(CodeBlockAnalysisContext context, SyntaxNode codeBlock)
         {
             var childrenNodes = codeBlock.ChildNodes();
@@ -107,7 +126,7 @@ namespace BlankLineAssignmentsAnalyzer
 
                     if (isNeedBlankLineBeforeBlock)
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, childNode.GetLocation(), DiagnosticSeverity.Warning));
+                        context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, previousNode.GetLocation(), DiagnosticSeverity.Warning));
                     }
                     else if (isNeedBlankLineAfterBlock)
                     {
@@ -116,28 +135,6 @@ namespace BlankLineAssignmentsAnalyzer
                 }
 
                 previousNode = childNode;
-            }
-
-        }
-
-        /// <summary>
-        /// Code block analyze
-        /// </summary>
-        /// <param name="context"> CodeBlock context </param>
-        private static void ContextCodeBlockAnalize(CodeBlockAnalysisContext context)
-        {
-            var blockNodes = context.CodeBlock.ChildNodes();
-
-            foreach (var blockNode in blockNodes)
-            {
-                if (blockNode.Kind() != SyntaxKind.Block)
-                {
-                    continue;
-                }
-
-                AnalizeCodeBlock(context, blockNode);
-
-                break;
             }
         }
 
@@ -154,6 +151,19 @@ namespace BlankLineAssignmentsAnalyzer
             }
 
             return node.Kind();
+        }
+
+        /// <summary>
+        /// Check if a node kind contains child nodes
+        /// </summary>
+        /// <param name="kind"> Kind </param>
+        /// <returns> Flag if has sub nodes </returns>
+        private static bool IsMultipleKind(SyntaxKind kind)
+        {
+            return kind == SyntaxKind.Block || kind == SyntaxKind.ForStatement || kind == SyntaxKind.ForEachStatement ||
+                   kind == SyntaxKind.TryStatement || kind == SyntaxKind.FinallyClause ||
+                   kind == SyntaxKind.WhileStatement || kind == SyntaxKind.IfStatement || kind == SyntaxKind.ElseClause ||
+                   kind == SyntaxKind.SwitchStatement || kind == SyntaxKind.SwitchSection;
         }
     }
 }

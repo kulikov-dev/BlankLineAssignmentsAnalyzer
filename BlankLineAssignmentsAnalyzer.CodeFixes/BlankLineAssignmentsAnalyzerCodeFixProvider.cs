@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,54 +38,46 @@ namespace BlankLineAssignmentsAnalyzer
         /// A <see cref="CodeFixContext"/> containing context information about the diagnostics to fix.
         /// The context must only contain diagnostics with a <see cref="Diagnostic.Id"/> included in the <see cref="FixableDiagnosticIds"/> for the current provider.
         /// </param>
-        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
+        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var diagnostic = context.Diagnostics.First();
+            var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: CodeFixResources.CodeFixTitle,
-                    createChangedDocument: c => AddBlankLine(context, c),
-                    equivalenceKey: nameof(CodeFixResources.CodeFixTitle)),
-                diagnostic);
+            foreach (var diagnostic in context.Diagnostics)
+            {
+                var diagnosticSpan = diagnostic.Location.SourceSpan;
 
-            return Task.CompletedTask;
+                var problemNode = root.FindNode(diagnosticSpan);
+
+                // Register a code action that will invoke the fix.
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title: CodeFixResources.CodeFixTitle,
+                        createChangedDocument: cancellationToken => AddBlankLineAsync(context.Document, diagnostic.Id, problemNode, cancellationToken),
+                        equivalenceKey: nameof(CodeFixResources.CodeFixTitle)),
+                    diagnostic);
+            }
         }
+
 
         /// <summary>
         /// Problem resolver
         /// </summary>
-        /// <param name="context"> Fix context </param>
+        /// <param name="document"> Document </param>
+        /// <param name="problemID"> Diagnostic identifier </param>
+        /// <param name="problemNode"> Node with problem </param>
         /// <param name="cancellationToken"> Cancellation token </param>
-        /// <returns></returns>
-        private static async Task<Document> AddBlankLine(CodeFixContext context, CancellationToken cancellationToken)
+        /// <returns> Fixed document </returns>
+        private static async Task<Document> AddBlankLineAsync(Document document, string problemID, SyntaxNode problemNode, CancellationToken cancellationToken)
         {
-            var oldRoot = await context.Document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-
-            var diagnostic = context.Diagnostics.First();
-            var diagnosticSpan = diagnostic.Location.SourceSpan;
-
-            var problemNode = oldRoot.FindNode(diagnosticSpan);
-
-            SyntaxNode replacedNode;
-            if (diagnostic.Id.Equals(BlankLineAssignmentsAnalyzer.DiagnosticIdBefore))
-            {
-                var firstToken = problemNode.GetFirstToken();
-                replacedNode = problemNode.ReplaceToken(firstToken, firstToken.WithLeadingTrivia(SyntaxFactory.Whitespace(Environment.NewLine + Environment.NewLine)));
-            }
-            else
-            {
-
-                var lastToken = problemNode.GetLastToken();
-                replacedNode = problemNode.ReplaceToken(lastToken, lastToken.WithTrailingTrivia(SyntaxFactory.Whitespace(Environment.NewLine + Environment.NewLine)));
-            }
+            var lastToken = problemNode.GetLastToken();
+            var replacedNode = problemNode.ReplaceToken(lastToken, lastToken.WithTrailingTrivia(SyntaxFactory.EndOfLine(Environment.NewLine + Environment.NewLine)));
 
             // Replace the old local problemNode with the new local problemNode.
+            var oldRoot = await document.GetSyntaxRootAsync(cancellationToken);
             var newRoot = oldRoot.ReplaceNode(problemNode, replacedNode);
 
             // Return document with transformed tree.
-            return context.Document.WithSyntaxRoot(newRoot);
+            return document.WithSyntaxRoot(newRoot);
         }
     }
 }
