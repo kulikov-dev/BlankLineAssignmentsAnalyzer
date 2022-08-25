@@ -66,16 +66,66 @@ namespace BlankLineAssignmentsAnalyzer
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             context.EnableConcurrentExecution();
 
-            context.RegisterCodeBlockAction(AnalizeCodeBlock);
+            context.RegisterCodeBlockAction(ContextCodeBlockAnalize);
+        }
+
+        private static bool IsMultipleKind(SyntaxKind kind)
+        {
+            return kind == SyntaxKind.Block || kind == SyntaxKind.ForStatement || kind == SyntaxKind.ForEachStatement ||
+                   kind == SyntaxKind.TryStatement || kind == SyntaxKind.FinallyClause ||
+                   kind == SyntaxKind.WhileStatement || kind == SyntaxKind.IfStatement || kind == SyntaxKind.ElseClause;
+        }
+
+        private static void AnalizeCodeBlock(CodeBlockAnalysisContext context, SyntaxNode codeBlock)
+        {
+            var childrenNodes = codeBlock.ChildNodes();
+            var previousNode = default(SyntaxNode);
+
+            foreach (var childNode in childrenNodes)
+            {
+                var currentType = GetNodeKind(childNode);
+
+                if (IsMultipleKind(currentType))
+                {
+                    AnalizeCodeBlock(context, childNode);
+                }
+
+                var currentLineSpan = childNode.SyntaxTree.GetLineSpan(childNode.Span);
+                if (previousNode == null)
+                {
+                    previousNode = childNode;
+                    continue;
+                }
+
+                var previousLineSpan = previousNode.SyntaxTree.GetLineSpan(previousNode.Span);
+                var previousType = GetNodeKind(previousNode);
+
+                if (currentLineSpan.StartLinePosition.Line - previousLineSpan.EndLinePosition.Line == 1)
+                {
+                    var isNeedBlankLineBeforeBlock = (currentType == SyntaxKind.SimpleAssignmentExpression || currentType == SyntaxKind.LocalDeclarationStatement) && (previousType != SyntaxKind.SimpleAssignmentExpression && previousType != SyntaxKind.LocalDeclarationStatement);
+                    var isNeedBlankLineAfterBlock = (previousType == SyntaxKind.SimpleAssignmentExpression || previousType == SyntaxKind.LocalDeclarationStatement) && (currentType != SyntaxKind.SimpleAssignmentExpression && currentType != SyntaxKind.LocalDeclarationStatement);
+
+                    if (isNeedBlankLineBeforeBlock)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, childNode.GetLocation(), DiagnosticSeverity.Warning));
+                    }
+                    else if (isNeedBlankLineAfterBlock)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleAfter, previousNode.GetLocation(), DiagnosticSeverity.Warning));
+                    }
+                }
+
+                previousNode = childNode;
+            }
+
         }
 
         /// <summary>
         /// Code block analyze
         /// </summary>
         /// <param name="context"> CodeBlock context </param>
-        private static void AnalizeCodeBlock(CodeBlockAnalysisContext context)
+        private static void ContextCodeBlockAnalize(CodeBlockAnalysisContext context)
         {
-            var previousNode = default(SyntaxNode);
             var blockNodes = context.CodeBlock.ChildNodes();
 
             foreach (var blockNode in blockNodes)
@@ -85,38 +135,7 @@ namespace BlankLineAssignmentsAnalyzer
                     continue;
                 }
 
-                var childNodes = blockNode.ChildNodes();
-                foreach (var childNode in childNodes)
-                {
-                    var currentType = GetNodeKind(childNode);
-
-                    var currentLineSpan = childNode.SyntaxTree.GetLineSpan(childNode.Span);
-                    if (previousNode == null)
-                    {
-                        previousNode = childNode;
-                        continue;
-                    }
-
-                    var previousLineSpan = previousNode.SyntaxTree.GetLineSpan(previousNode.Span);
-                    var previousType = GetNodeKind(previousNode);
-
-                    if (currentLineSpan.StartLinePosition.Line - previousLineSpan.EndLinePosition.Line == 1)
-                    {
-                        var isNeedBlankLineBeforeBlock = (currentType == SyntaxKind.SimpleAssignmentExpression || currentType == SyntaxKind.LocalDeclarationStatement) && (previousType != SyntaxKind.SimpleAssignmentExpression && previousType != SyntaxKind.LocalDeclarationStatement);
-                        var isNeedBlankLineAfterBlock = (previousType == SyntaxKind.SimpleAssignmentExpression || previousType == SyntaxKind.LocalDeclarationStatement) && (currentType != SyntaxKind.SimpleAssignmentExpression && currentType != SyntaxKind.LocalDeclarationStatement);
-
-                        if (isNeedBlankLineBeforeBlock)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleBefore, childNode.GetLocation(), DiagnosticSeverity.Warning));
-                        }
-                        else if (isNeedBlankLineAfterBlock)
-                        {
-                            context.ReportDiagnostic(Diagnostic.Create(AssignmentsRuleAfter, previousNode.GetLocation(), DiagnosticSeverity.Warning));
-                        }
-                    }
-
-                    previousNode = childNode;
-                }
+                AnalizeCodeBlock(context, blockNode);
 
                 break;
             }
